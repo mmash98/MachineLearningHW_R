@@ -1,0 +1,84 @@
+# Marianna Ohanyan , ml h5 5.05.19
+
+
+#install.packages("caret")
+#install.packages("ggplot2")
+#install.packages("e1071")
+install.packages("rpart.plot")
+library(caret)
+library(MASS)
+library(ggplot2)
+library(plotROC)
+library(e1071)
+library(rpart.plot)
+
+
+
+german_credit = read.table("http://archive.ics.uci.edu/ml/machine-learning-databases/statlog/german/german.data")
+
+colnames(german_credit) = c("chk_acct", "duration", "credit_his", "purpose", 
+                            "amount", "saving_acct", "present_emp", "installment_rate", "sex", "other_debtor", 
+                            "present_resid", "property", "age", "other_install", "housing", "n_credits", 
+                            "job", "n_people", "telephone", "foreign", "response")
+
+
+# response 1 = negative 
+# responce 2 = positive 
+
+
+
+df = german_credit
+
+df$response_new = df$response - 1
+
+# deviding data into training and testing sets 
+set.seed(1)
+inds <- createDataPartition(df$response, p = 0.8, list=FALSE)
+#making factors for classification 
+df$response = as.factor(df$response)
+
+df_train <- df[inds,]
+df_test <- df[-inds,]
+
+summary(df)
+#####1 decision tree classification 
+  
+grid = expand.grid(cp = seq(0, 0.4, by = 0.01))
+
+train_control = trainControl(method = "cv",
+                             number = 10)
+
+model_tree = train(response ~ ., 
+                   data = df_train, 
+                   method = "rpart",
+                   tuneLength = 30,
+                   trControl = train_control,
+                   tuneGrid = grid)
+
+ggplot(model_tree)
+#drawing tree
+rpart.plot(model_tree$finalModel)
+prp(model_tree$finalModel, digits = 4, roundint = F)
+
+#confusion matrix 
+model_tree_raw = predict(model_tree, newdata = df_test, type = "raw")
+model_tree_prob = predict(model_tree, newdata = df_test, type = "prob")
+
+cm1 = confusionMatrix(model_tree_raw, data = df_test$response)
+cm1 #   Accuracy : 0.74
+
+#drawing roc 
+roc_frame = data.frame( response = df_test$response, 
+                        prob = model_tree_prob[,2] )
+
+tt_smooth = ggplot(roc_frame, aes(m = prob, d = response)) + 
+  geom_roc() + 
+  coord_equal()+
+  xlab("FPR") + 
+  ylab("TPR")+
+  ggtitle("ROC")
+
+tt_smooth
+
+calc_auc(tt_smooth) #0.7379189
+
