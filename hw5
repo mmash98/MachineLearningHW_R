@@ -30,6 +30,7 @@ colnames(german_credit) = c("chk_acct", "duration", "credit_his", "purpose",
 df = german_credit
 
 
+
 # deviding data into training and testing sets 
 set.seed(1)
 inds <- createDataPartition(df$response, p = 0.8, list=FALSE)
@@ -63,8 +64,11 @@ prp(model_tree$finalModel, digits = 4, roundint = F)
 model_tree_raw = predict(model_tree, newdata = df_test, type = "raw")
 model_tree_prob = predict(model_tree, newdata = df_test, type = "prob")
 
-cm1 = confusionMatrix(model_tree_raw, data = df_test$response)
-cm1 #   Accuracy : 0.74
+cm1 = confusionMatrix(model_tree_raw, data = df_test$response, positive = '2')
+cm1 
+
+#Pos Pred Value : 0.4310
+#Accuracy : 0.74 
 
 #drawing roc 
 roc_frame = data.frame( response = df_test$response, 
@@ -80,4 +84,93 @@ tt_smooth = ggplot(roc_frame, aes(m = prob, d = response)) +
 tt_smooth
 
 calc_auc(tt_smooth) #0.7379189
+
+
+
+#2 random forests
+
+model_rf = train(response ~ ., 
+                   data = df_train, 
+                   method = "rf",
+                   ntree = 50 )
+
+#confusion matrix 
+model_rf_raw = predict(model_rf, newdata = df_test, type = "raw")
+model_rf_prob = predict(model_rf, newdata = df_test, type = "prob")
+
+cm2 = confusionMatrix(model_rf_raw, data = df_test$response, positive = '2')
+cm2
+#Pos Pred Value : 0.3793
+#Accuracy : 0.745 
+
+
+roc_frame_2 = data.frame( response = df_test$response, 
+                        prob = model_rf_prob[,2] )
+
+tt_smooth2 = ggplot(roc_frame_2, aes(m = prob, d = response)) + 
+  geom_roc() + 
+  coord_equal()+
+  xlab("FPR") + 
+  ylab("TPR")+
+  ggtitle("ROC")
+
+tt_smooth2
+
+calc_auc(tt_smooth2) ###0.7464789
+
+
+##adaboost
+
+model_adaboost <- train(response ~ ., 
+                     data = df_train,
+                     method = 'adaboost',
+                     tuneGrid=expand.grid(nIter=10, method='adaboost'))
+
+
+#confusion matrix 
+model_boost_raw = predict(model_adaboost, newdata = df_test, type = "raw")
+model_boost_prob = predict(model_adaboost, newdata = df_test, type = "prob")
+
+cm3 = confusionMatrix(model_boost_raw, data = df_test$response, positive = '2')
+cm3 
+
+#Pos Pred Value : 0.4828 
+#Accuracy : 0.73
+
+#roc
+
+roc_frame_3 = data.frame( response = df_test$response, 
+                          prob = model_boost_prob[,2] )
+
+tt_smooth3 = ggplot(roc_frame_3, aes(m = prob, d = response)) + 
+  geom_roc() + 
+  coord_equal()+
+  xlab("FPR") + 
+  ylab("TPR")+
+  ggtitle("ROC")
+
+tt_smooth3
+
+calc_auc(tt_smooth3) ###0.5147523
+
+
+
+###4. Compare the precisions on the test set and pick the best model for
+#classification (score = 10).
+
+#1classification tree
+#Pos Pred Value(precision) : 0.4310
+#Accuracy : 0.74 
+
+
+#2 Random forest model:
+#Pos Pred Value(precision) : 0.3793
+#Accuracy : 0.745 
+
+#3 boosting 
+
+#Pos Pred Value(precision) : 0.4828 
+#Accuracy : 0.73
+
+#the best precison has boosting method 0.4828 
 
