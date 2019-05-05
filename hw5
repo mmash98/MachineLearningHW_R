@@ -29,7 +29,6 @@ colnames(german_credit) = c("chk_acct", "duration", "credit_his", "purpose",
 
 df = german_credit
 
-df$response_new = df$response - 1
 
 # deviding data into training and testing sets 
 set.seed(1)
