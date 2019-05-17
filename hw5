@@ -85,7 +85,7 @@ tt_smooth
 
 calc_auc(tt_smooth) #0.7379189
 
-
+### Instructor's comment: Show the confusion matrix and the ROC curve for the training set - ??? (-5).
 
 #2 random forests
 
@@ -117,6 +117,8 @@ tt_smooth2 = ggplot(roc_frame_2, aes(m = prob, d = response)) +
 tt_smooth2
 
 calc_auc(tt_smooth2) ###0.7464789
+
+### Instructor's comment: Show the confusion matrix and the ROC curve for the training set - ??? (-5).
 
 
 ##adaboost
@@ -153,7 +155,7 @@ tt_smooth3
 
 calc_auc(tt_smooth3) ###0.5147523
 
-
+### Instructor's comment: Show the confusion matrix and the ROC curve for the training set - ??? (-5).
 
 ###4. Compare the precisions on the test set and pick the best model for
 #classification (score = 10).
@@ -172,5 +174,10 @@ calc_auc(tt_smooth3) ###0.5147523
 #Pos Pred Value(precision) : 0.4828 
 #Accuracy : 0.73
 
-#the best precison has boosting method 0.4828 
+#the best precison has boosting method 0.4828  
 
+
+
+
+
+### Instructor's comment: 85/100.
